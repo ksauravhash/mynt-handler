@@ -1,0 +1,30 @@
+{
+  "name": "mynt-handler",
+  "description": "",
+  "author": "Saurav Kumar <hsauravhash@gmail.com>",
+  "keywords": [
+    "mynt",
+    "typescript"
+  ],
+  "version": "0.0.1",
+  "license": "GPL-3.0-only",
+  "homepage": "https://github.com/ksauravhash/mynt-handler#readme",
+  "bugs": {
+    "url": "https://github.com/ksauravhash/mynt-handler/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ksauravhash/mynt-handler.git"
+  },
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3"
+  }
+}
