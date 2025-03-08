@@ -24,7 +24,12 @@
     "build": "tsup"
   },
   "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/pako": "^2.0.3",
     "tsup": "^8.3.6",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "pako": "^2.1.0"
   }
 }
