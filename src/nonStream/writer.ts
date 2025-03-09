@@ -3,26 +3,35 @@ import { compress } from "../utils/compressor";
 import { NoteBlock } from "../types";
 
 /**
- * Writes a Mynt file with compression by default.
+ * Writes a Mynt file with an uncompressed header and compressed data section.
  * @param {string} filePath - Path to save the Mynt file.
  * @param {NoteBlock[]} notes - Notes to include in the Mynt file.
  */
 export const writeMyntFile = async (filePath: string, notes: NoteBlock[]) => {
+    // Create uncompressed header
     const headerBuffer = Buffer.alloc(16);
     headerBuffer.write("MYNT", 0);
-    headerBuffer.writeUInt8(1, 4);
-    headerBuffer.writeUInt8(0, 7);
+    headerBuffer.writeUInt8(1, 4);          // Major version
+    headerBuffer.writeUInt8(0, 5);          // Minor version
+    headerBuffer.writeUInt8(0, 6);          // Patch version
+    headerBuffer.writeUInt8(1, 7);          // Flags: 1 = data compressed, header uncompressed
 
+    // Serialize notes to buffer
     const notesBuffer = Buffer.concat(notes.map(serializeNoteBlock));
     const metadataSize = notesBuffer.length;
 
+    // Write metadata size and TOC offset
     headerBuffer.writeUInt32LE(metadataSize, 8);
     headerBuffer.writeUInt32LE(headerBuffer.length, 12);
 
-    const combinedBuffer = Buffer.concat([headerBuffer, notesBuffer]);
-    const compressedData = compress(combinedBuffer);
+    // Compress only the data section
+    const compressedData = compress(notesBuffer);
 
-    await writeFile(filePath, compressedData);
+    // Combine header with compressed data
+    const combinedBuffer = Buffer.concat([headerBuffer, compressedData]);
+
+    // Write to file
+    await writeFile(filePath, combinedBuffer);
 };
 
 /**
