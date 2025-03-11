@@ -1,7 +1,10 @@
 
 ---
+# Mynt Handler
 
-# Mynt File Reader
+[![npm version](https://img.shields.io/npm/v/mynt-handler)](https://www.npmjs.com/package/mynt-handler)
+[![npm downloads](https://img.shields.io/npm/dm/mynt-handler)](https://www.npmjs.com/package/mynt-handler)
+[![license](https://img.shields.io/npm/l/mynt-handler)](https://github.com/ksauravhash/mynt-handler/blob/main/LICENSE)
 
 A fast and efficient binary file format for storing notes, images, and audio.  
 This package provides tools to create, read, and manage `.mynt` files with support for both **stream-based** and **non-stream-based** operations.
@@ -56,5 +59,19 @@ await Writer.writeMyntFile("example.mynt", notes);
 import { Reader } from "mynt-handler";
 
 const myntData = await Reader.readMyntFile("example.mynt");
+console.log(myntData);
+```
+
+---
+
+### 📥 Reading a Mynt File from Buffer
+**Parses an in-memory buffer without requiring a file path.**
+
+```ts
+import { Reader } from "mynt-handler";
+import { readFileSync } from "fs";
+
+const fileBuffer = readFileSync("example.mynt");
+const myntData = await Reader.readMyntFileFromBuffer(fileBuffer);
 console.log(myntData);
 ```

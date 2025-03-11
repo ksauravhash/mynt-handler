@@ -35,3 +35,30 @@ export const readMyntFile = async (filePath: string): Promise<MyntFile> => {
         throw new MyntFileError(`Error reading Mynt file: ${error.message}`);
     }
 };
+
+/**
+ * Reads a Mynt file and returns parsed data.
+ * @param {string} filePath - Path to the Mynt file.
+ * @returns {Promise<MyntFile>} - Parsed Mynt file data.
+ * @throws {MyntFileError} - If the file cannot be read or parsed.
+ */
+export const readMyntFileFromBuffer = async (fileBuffer: Buffer<ArrayBufferLike>): Promise<MyntFile> => {
+    try {
+        const header = parseHeader(fileBuffer.subarray(0, 16));
+
+        let dataBuffer = fileBuffer.subarray(16);
+
+        if (header.flags & 1) {
+            try {
+                dataBuffer = decompress(dataBuffer);
+            } catch (error) {
+                throw new MyntFileError("Failed to decompress Mynt file data.");
+            }
+        }
+
+        const notes = parseNoteBlocks(dataBuffer, header.tocOffset - 16);
+        return { header, notes };
+    } catch (error) {
+        throw new MyntFileError(`Error reading Mynt file: ${error.message}`);
+    }
+};
