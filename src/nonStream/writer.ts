@@ -1,6 +1,6 @@
 import { writeFile } from "fs/promises";
 import { compress } from "../utils/compressor";
-import { NoteBlock } from "../types";
+import { Note, NoteBlock, Notebook } from "../types";
 import { MyntFileError } from "../errors";
 
 /**
@@ -70,3 +70,99 @@ const serializeNoteBlock = (noteBlock: NoteBlock): Buffer => {
 
     return buffer;
 };
+
+
+/**
+ * Writes a Mynt file using the new V2 structure.
+ * @param {string} filePath - Path to save the Mynt file.
+ * @param {Notebook} notebook - Notebook containing notes and note blocks.
+ * @throws {MyntFileError} - If serialization or compression fails.
+ */
+export const writeMyntFileV2 = async (filePath: string, notebook: Notebook) => {
+    try {
+        // Create uncompressed header
+        const headerBuffer = Buffer.alloc(16);
+        headerBuffer.write("MYNT", 0);
+        headerBuffer.writeUInt8(2, 4); // Major version
+        headerBuffer.writeUInt8(0, 5); // Minor version
+        headerBuffer.writeUInt8(0, 6); // Patch version
+        headerBuffer.writeUInt8(1, 7); // Flags: 1 = data compressed
+
+        // Serialize notebook to buffer
+        const notebookBuffer = serializeNotebook(notebook);
+        const metadataSize = notebookBuffer.length;
+
+        // Write metadata size and TOC offset
+        headerBuffer.writeUInt32LE(metadataSize, 8);
+        headerBuffer.writeUInt32LE(headerBuffer.length, 12);
+
+        // Compress only the data section
+        let compressedData;
+        try {
+            compressedData = compress(notebookBuffer);
+        } catch (error) {
+            throw new MyntFileError("Failed to compress Mynt file data.");
+        }
+
+        // Combine header with compressed data
+        const combinedBuffer = Buffer.concat([headerBuffer, compressedData]);
+
+        // Write to file
+        await writeFile(filePath, combinedBuffer);
+    } catch (error) {
+        throw new MyntFileError(`Error writing Mynt file: ${error.message}`);
+    }
+};
+
+/**
+ * Serializes a Notebook into a Buffer.
+ * @param {Notebook} notebook - Notebook to serialize.
+ * @returns {Buffer} - Serialized Buffer.
+ * @throws {MyntFileError} - If any note or note block has invalid data.
+ */
+const serializeNotebook = (notebook: Notebook): Buffer => {
+    try {
+        const titleBuffer = Buffer.from(notebook.title, "utf-8");
+        const titleLengthBuffer = Buffer.alloc(4);
+        titleLengthBuffer.writeUInt32LE(titleBuffer.length, 0);
+        const noteCountBuffer = Buffer.alloc(4);
+        noteCountBuffer.writeUInt32LE(notebook.notes.length);
+
+        const notesBuffer = Buffer.concat(notebook.notes.map(serializeNote));
+
+        return Buffer.concat([
+            titleLengthBuffer,
+            titleBuffer,
+            noteCountBuffer,
+            notesBuffer
+        ]);
+    } catch (error) {
+        throw new MyntFileError("Failed to serialize notebook.");
+    }
+};
+
+
+/**
+ * Serializes a Note into a Buffer.
+ * @param {Note} note - Note to serialize.
+ * @returns {Buffer} - Serialized Buffer.
+ */
+const serializeNote = (note: Note): Buffer => {
+    const titleBuffer = Buffer.from(note.title, "utf-8");
+    const titleLengthBuffer = Buffer.alloc(4);
+    titleLengthBuffer.writeUInt32LE(titleBuffer.length, 0);
+    const noteBlockCountBuffer = Buffer.alloc(2);
+    noteBlockCountBuffer.writeUInt16LE(note.noteBlocks.length);
+
+    const noteBlocksBuffer = Buffer.concat(note.noteBlocks.map(serializeNoteBlock));
+
+    return Buffer.concat([
+        titleLengthBuffer,
+        titleBuffer,
+        noteBlockCountBuffer,
+        noteBlocksBuffer
+    ]);
+};
+
+
+
