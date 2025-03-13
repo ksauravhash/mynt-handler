@@ -19,3 +19,18 @@ export type MyntFile = {
     header: MyntHeader;
     notes: NoteBlock[];
 };
+
+export type Note = {
+    title: string;
+    noteBlocks: NoteBlock[] 
+}
+
+export type Notebook = {
+    title: string;
+    notes: Note[]
+}
+
+export type MyntFileV2 = {
+    header: MyntHeader;
+    notebook: Notebook;
+}
