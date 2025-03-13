@@ -64,7 +64,7 @@ export const parseNoteBlocks = (buffer: Buffer, offset: number): NoteBlock[] => 
 
         const type = ["word", "description", "image", "audio"][typeIndex] as NoteBlockType;
         const content = (type === "image" || type === "audio")
-            ? buffer.slice(contentStart, contentEnd)
+            ? buffer.subarray(contentStart, contentEnd)
             : buffer.toString("utf-8", contentStart, contentEnd);
 
         const sequenceNumber = buffer.readUInt32LE(contentEnd);

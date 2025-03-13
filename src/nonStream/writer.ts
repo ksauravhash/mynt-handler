@@ -17,7 +17,7 @@ export const writeMyntFile = async (filePath: string, notes: NoteBlock[]) => {
         headerBuffer.writeUInt8(1, 4);          // Major version
         headerBuffer.writeUInt8(0, 5);          // Minor version
         headerBuffer.writeUInt8(0, 6);          // Patch version
-        headerBuffer.writeUInt8(1, 7);          // Flags: 1 = data compressed, header uncompressed
+        headerBuffer.writeUInt8(1, 7);          // Flags: 1 = data compressed,
 
         // Serialize notes to buffer
         const notesBuffer = Buffer.concat(notes.map(serializeNoteBlock));
@@ -47,26 +47,26 @@ export const writeMyntFile = async (filePath: string, notes: NoteBlock[]) => {
 
 /**
  * Serializes a NoteBlock into a Buffer.
- * @param {NoteBlock} note - NoteBlock to serialize.
+ * @param {NoteBlock} noteBlock - NoteBlock to serialize.
  * @returns {Buffer} - Serialized Buffer.
  * @throws {MyntFileError} - If the note block has an invalid type.
  */
-const serializeNoteBlock = (note: NoteBlock): Buffer => {
-    const typeIndex = ["word", "description", "image", "audio"].indexOf(note.type);
+const serializeNoteBlock = (noteBlock: NoteBlock): Buffer => {
+    const typeIndex = ["word", "description", "image", "audio"].indexOf(noteBlock.type);
     if (typeIndex === -1) {
         throw new MyntFileError("Invalid NoteBlock type.");
     }
 
-    const contentBuffer = Buffer.isBuffer(note.content)
-        ? note.content
-        : Buffer.from(note.content, "utf-8");
+    const contentBuffer = Buffer.isBuffer(noteBlock.content)
+        ? noteBlock.content
+        : Buffer.from(noteBlock.content, "utf-8");
 
     const buffer = Buffer.alloc(10 + contentBuffer.length);
     buffer.writeUInt8(typeIndex, 0);
     buffer.writeUInt32LE(contentBuffer.length, 1);
     contentBuffer.copy(buffer, 5);
-    buffer.writeUInt32LE(note.sequenceNumber, 5 + contentBuffer.length);
-    buffer.writeUInt8(note.answer ? 1 : 0, 9 + contentBuffer.length);
+    buffer.writeUInt32LE(noteBlock.sequenceNumber, 5 + contentBuffer.length);
+    buffer.writeUInt8(noteBlock.answer ? 1 : 0, 9 + contentBuffer.length);
 
     return buffer;
 };
