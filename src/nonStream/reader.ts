@@ -102,10 +102,10 @@ export const readMyntFileV2 = async (filePath: string): Promise<MyntFileV2> => {
  * Parses a Mynt V2 file from a given buffer and returns its structured data.
  * 
  * @param {Buffer<ArrayBufferLike>} fileBuffer - A buffer containing the raw Mynt file data.
- * @returns {Promise<MyntFile>} - A promise that resolves to the parsed Mynt file data.
+ * @returns {Promise<MyntFileV2>} - A promise that resolves to the parsed Mynt file data.
  * @throws {MyntFileError} - Throws an error if the buffer is invalid, corrupted, or cannot be parsed.
  */
-export const readMyntFileFromBufferV2 = async (fileBuffer: Buffer<ArrayBufferLike>): Promise<MyntFile> => {
+export const readMyntFileFromBufferV2 = async (fileBuffer: Buffer<ArrayBufferLike>): Promise<MyntFileV2> => {
     try {
         if (fileBuffer.length < 16) {
             throw new MyntFileError("Invalid Mynt file: File too small.");
@@ -122,8 +122,8 @@ export const readMyntFileFromBufferV2 = async (fileBuffer: Buffer<ArrayBufferLik
             }
         }
 
-        const notes = parseNoteBlocks(dataBuffer, header.tocOffset - 16);
-        return { header, notes };
+        const notebook = parseNotebook(dataBuffer, header.tocOffset - 16);
+        return { header, notebook };
     } catch (error) {
         throw new MyntFileError(`Error reading Mynt file: ${error.message}`);
     }
